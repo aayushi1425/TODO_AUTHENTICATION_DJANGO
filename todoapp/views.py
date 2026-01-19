@@ -3,9 +3,11 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
+from django.core.paginator import Paginator
 
 from todoapp.forms import TodoForm
-from todoapp.models import Todo
+from todoapp.models import Todo, User
+from django.db.models import Q
 
 # Create your views here.
 
@@ -59,8 +61,20 @@ def register_page(request):
     return render(request, 'todoapp/register.html')
 
 def todo_page(request):
-
     item_list = Todo.objects.order_by('-date')
+
+    query = request.GET.get('q')
+    if query:
+        item_list = Todo.objects.filter(
+            Q(title__icontains=query) | Q(description__icontains=query)
+        )
+    else:
+        item_list = Todo.objects.all()
+
+    p = Paginator(item_list, 3)
+    page_number = request.GET.get('page')
+    page_obj = p.get_page(page_number)
+
     if request.method == 'POST':
         form = TodoForm(request.POST)
         if form.is_valid():
@@ -70,8 +84,9 @@ def todo_page(request):
 
     page = {
         "forms" : form,
-        "list" : item_list,
         "title" : "Todo List",
+        "page_obj": page_obj,
+        "query": query
     }
     return render(request, 'todoapp/todo_list.html', page)
 
