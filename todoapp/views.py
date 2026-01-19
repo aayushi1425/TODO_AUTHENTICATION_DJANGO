@@ -4,10 +4,13 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 
+from todoapp.forms import TodoForm
+from todoapp.models import Todo
+
 # Create your views here.
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'todoapp/home.html')
 
 def login_page(request):
     if request.method == 'POST':
@@ -27,7 +30,7 @@ def login_page(request):
             login(request, user)
             return redirect('home')
 
-    return render(request, 'login.html')
+    return render(request, 'todoapp/login.html')
 
 def register_page(request):
     if request.method == 'POST':
@@ -53,4 +56,33 @@ def register_page(request):
         messages.success(request, 'Account created successfully')
         return redirect('login')
 
-    return render(request, 'register.html')
+    return render(request, 'todoapp/register.html')
+
+def todo_page(request):
+
+    item_list = Todo.objects.order_by('-date')
+    if request.method == 'POST':
+        form = TodoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('todo_list')
+    form = TodoForm()
+
+    page = {
+        "forms" : form,
+        "list" : item_list,
+        "title" : "Todo List",
+    }
+    return render(request, 'todoapp/todo_list.html', page)
+
+# def todo_update(request):
+#     return render(request, 'todo_list.html')
+
+def todo_delete(request, item_id):
+    item = Todo.objects.get(id=item_id)
+    item.delete()
+    messages.success(request, 'Item deleted successfully')  
+    return redirect('todo_list')
+
+# def todo_view(request):
+#     return render(request, 'todo_list.html')

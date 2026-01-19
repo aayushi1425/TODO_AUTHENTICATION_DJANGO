@@ -23,6 +23,9 @@ urlpatterns = [
     path('home/', views.home, name='home'),
     path('login/', views.login_page, name='login'),
     path('register/', views.register_page, name='register'),
+    # path('todo_list/', views.todo_page, name='todo_list'),
+    path('todo_list/', views.todo_page, name='todo_list'),
+    path('todo_list/del/<str:item_id>', views.todo_delete, name="del"),
     path('admin/', admin.site.urls),
 ]
 
